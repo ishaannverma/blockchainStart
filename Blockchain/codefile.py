@@ -5,7 +5,7 @@ import hashlib
 import json
 from flask import Flask, jsonify
 
-# Part 1 - Building a Blockchain
+# Part 1 - Building a Blockchaingit
 
 class Blockchain:
     def __init__(self):
@@ -72,3 +72,38 @@ class Blockchain:
     
 # Part 2 - Mining our Blockchain
 
+# creating a web app
+app = Flask(__name__)
+
+# creating a Blockchain
+blockchain = Blockchain()
+
+# mining a new block
+@app.route('/mineBlock', methods = ['GET'])
+def mineBlock():
+    prevBlock = blockchain.getPreviousBlock()
+    prevProof = prevBlock['proof']
+    proofOfWork = blockchain.proofOfWork(previousProof=prevProof)
+    
+    prevHash = blockchain.hash(prevBlock)
+    block = blockchain.createBlock(proofOfWork, prevHash)
+
+    response = {'message': "Congratulations, you just mined a block!"}
+    for key,val in block.items():
+        response[key] = val
+        
+    return jsonify(response),200
+
+# getting the full blockchain
+@app.route('/getChain', methods = ['GET'])
+def getChain():
+    return jsonify({'chain': blockchain.chain, 
+            'length': len(blockchain.chain)
+            }), 200
+
+@app.route('/isValid', methods=['GET'])
+def isValid():
+    return str(blockchain.isChainValid(blockchain.chain))
+
+# running the app
+app.run(port = 5000)
